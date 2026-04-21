@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Almuerzos App</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+* {
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+  url('https://upload.wikimedia.org/wikipedia/commons/6/6b/Albufera_de_Valencia_sunset.jpg');
+  background-size: cover;
+  color: white;
+}
+
+.container {
+  max-width: 480px;
+  margin: auto;
+  padding: 15px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.card {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  margin-top: 8px;
+  border-radius: 10px;
+  border: none;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn-save { background: #4CAF50; color: white; }
+.btn-reset { background: #e53935; color: white; }
+
+button:hover {
+  transform: scale(1.03);
+}
+
+.historial-item {
+  background: rgba(0,0,0,0.4);
+  padding: 12px;
+  border-radius: 15px;
+  margin-top: 10px;
+}
+
+.stars {
+  color: gold;
+}
+
+.filtros {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.filtros input, .filtros select {
+  flex: 1;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🍽️ Almuerzos</h1>
+
+<div class="card">
+  <input type="date" id="fecha" max="2026-12-31">
+  <input type="text" id="poblacion" placeholder="📍 Población">
+  <input type="text" id="restaurante" placeholder="🍴 Restaurante">
+  <input type="number" id="precio" placeholder="💶 Precio">
+
+  <select id="pagador">
+    <option value="">👤 Quién paga</option>
+    <option>Toni</option>
+    <option>Verde</option>
+    <option>Sr. Felipe</option>
+  </select>
+
+  <input type="number" id="puntuacion" min="1" max="10" placeholder="⭐ Puntuación (1-10)">
+
+  <button class="btn-save" onclick="guardar()">Guardar almuerzo</button>
+  <button class="btn-reset" onclick="resetData()">Reset</button>
+</div>
+
+<div class="card">
+  <h3>🔎 Filtros</h3>
+  <div class="filtros">
+    <select id="filtroPersona" onchange="render()">
+      <option value="">Todos</option>
+      <option>Toni</option>
+      <option>Verde</option>
+      <option>Sr. Felipe</option>
+    </select>
+    <input type="date" id="fechaInicio" onchange="render()">
+    <input type="date" id="fechaFin" onchange="render()">
+  </div>
+</div>
+
+<div class="card">
+  <h3>📋 Historial</h3>
+  <div id="lista"></div>
+</div>
+
+<div class="card">
+  <h3>📊 Estadísticas</h3>
+  <canvas id="grafica"></canvas>
+</div>
+
+</div>
+
+<script>
+
+let data = JSON.parse(localStorage.getItem("almuerzos")) || [];
+
+function estrellas(p){
+  return "⭐".repeat(Math.ceil(p/2));
+}
+
+function guardar(){
+  let r = {
+    fecha: fecha.value,
+    poblacion: poblacion.value,
+    restaurante: restaurante.value,
+    precio: parseFloat(precio.value),
+    pagador: pagador.value,
+    puntuacion: parseInt(puntuacion.value)
+  };
+
+  if(!r.fecha || !r.poblacion || !r.restaurante || !r.pagador){
+    alert("Completa los campos");
+    return;
+  }
+
+  data.push(r);
+  localStorage.setItem("almuerzos", JSON.stringify(data));
+  render();
+}
+
+function resetData(){
+  if(confirm("¿Seguro que quieres borrar todo?")){
+    localStorage.clear();
+    data=[];
+    render();
+  }
+}
+
+function filtrar(){
+  let persona = filtroPersona.value;
+  let ini = fechaInicio.value;
+  let fin = fechaFin.value;
+
+  return data.filter(d=>{
+    return (!persona || d.pagador===persona) &&
+           (!ini || d.fecha>=ini) &&
+           (!fin || d.fecha<=fin);
+  });
+}
+
+function render(){
+  let lista = document.getElementById("lista");
+  lista.innerHTML="";
+
+  let f = filtrar();
+
+  f.forEach(d=>{
+    lista.innerHTML += `
+      <div class="historial-item">
+        <b>${d.restaurante}</b><br>
+        ${d.poblacion} | ${d.fecha}<br>
+        💶 ${d.precio} | 👤 ${d.pagador}<br>
+        <span class="stars">${estrellas(d.puntuacion)}</span>
+      </div>
+    `;
+  });
+
+  grafica(f);
+}
+
+let chart;
+
+function grafica(datos){
+  let ctx = graficaCanvas = document.getElementById("grafica");
+
+  let colores = {
+    "Toni":"#ff6384",
+    "Verde":"#4caf50",
+    "Sr. Felipe":"#2196f3"
+  };
+
+  if(chart) chart.destroy();
+
+  chart = new Chart(ctx,{
+    type:"line",
+    data:{
+      labels: datos.map(d=>d.fecha),
+      datasets:["Toni","Verde","Sr. Felipe"].map(p=>({
+        label:p,
+        data: datos.filter(d=>d.pagador===p).map(d=>d.precio),
+        borderColor:colores[p],
+        fill:false,
+        tension:0.4
+      }))
+    }
+  });
+}
+
+render();
+
+</script>
+
+</body>
+</html>
