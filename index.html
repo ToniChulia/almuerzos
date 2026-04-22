@@ -3,27 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Almuerzos App</title>
+<title>Almuerzos PRO</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-* {
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
+:root {
+  --bg: #0f172a;
+  --card: #1e293b;
+  --accent: #22c55e;
+  --text: #e2e8f0;
 }
 
 body {
   margin: 0;
-  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
-  url('https://upload.wikimedia.org/wikipedia/commons/6/6b/Albufera_de_Valencia_sunset.jpg');
-  background-size: cover;
-  color: white;
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
 }
 
 .container {
-  max-width: 480px;
+  max-width: 500px;
   margin: auto;
   padding: 15px;
 }
@@ -34,59 +34,48 @@ h1 {
 }
 
 .card {
-  background: rgba(255,255,255,0.1);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
+  background: var(--card);
   padding: 15px;
+  border-radius: 15px;
   margin-bottom: 15px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
 }
 
 input, select {
   width: 100%;
-  padding: 12px;
+  padding: 10px;
   margin-top: 8px;
   border-radius: 10px;
   border: none;
+  background: #334155;
+  color: white;
 }
 
 button {
   width: 100%;
   padding: 12px;
   margin-top: 10px;
-  border-radius: 12px;
+  border-radius: 10px;
   border: none;
-  font-weight: 600;
+  font-weight: bold;
   cursor: pointer;
-  transition: 0.3s;
 }
 
-.btn-save { background: #4CAF50; color: white; }
-.btn-reset { background: #e53935; color: white; }
+.save { background: var(--accent); }
+.reset { background: #ef4444; }
 
-button:hover {
-  transform: scale(1.03);
-}
-
-.historial-item {
-  background: rgba(0,0,0,0.4);
-  padding: 12px;
-  border-radius: 15px;
+.item {
+  background: #334155;
+  padding: 10px;
+  border-radius: 10px;
   margin-top: 10px;
 }
 
-.stars {
-  color: gold;
-}
+.stars { color: gold; }
 
 .filtros {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 5px;
-  flex-wrap: wrap;
-}
-
-.filtros input, .filtros select {
-  flex: 1;
 }
 
 </style>
@@ -100,21 +89,21 @@ button:hover {
 
 <div class="card">
   <input type="date" id="fecha" max="2026-12-31">
-  <input type="text" id="poblacion" placeholder="📍 Población">
-  <input type="text" id="restaurante" placeholder="🍴 Restaurante">
-  <input type="number" id="precio" placeholder="💶 Precio">
+  <input type="text" id="poblacion" placeholder="Población">
+  <input type="text" id="restaurante" placeholder="Restaurante">
+  <input type="number" id="precio" placeholder="Precio (€)">
 
   <select id="pagador">
-    <option value="">👤 Quién paga</option>
+    <option value="">Quién paga</option>
     <option>Toni</option>
     <option>Verde</option>
     <option>Sr. Felipe</option>
   </select>
 
-  <input type="number" id="puntuacion" min="1" max="10" placeholder="⭐ Puntuación (1-10)">
+  <input type="number" id="puntuacion" min="1" max="10" placeholder="Puntuación (1-10)">
 
-  <button class="btn-save" onclick="guardar()">Guardar almuerzo</button>
-  <button class="btn-reset" onclick="resetData()">Reset</button>
+  <button class="save" onclick="guardar()">Guardar</button>
+  <button class="reset" onclick="resetData()">Reset</button>
 </div>
 
 <div class="card">
@@ -137,7 +126,7 @@ button:hover {
 </div>
 
 <div class="card">
-  <h3>📊 Estadísticas</h3>
+  <h3>📊 Gasto por persona</h3>
   <canvas id="grafica"></canvas>
 </div>
 
@@ -162,7 +151,7 @@ function guardar(){
   };
 
   if(!r.fecha || !r.poblacion || !r.restaurante || !r.pagador){
-    alert("Completa los campos");
+    alert("Completa todos los campos");
     return;
   }
 
@@ -172,7 +161,7 @@ function guardar(){
 }
 
 function resetData(){
-  if(confirm("¿Seguro que quieres borrar todo?")){
+  if(confirm("¿Borrar todo?")){
     localStorage.clear();
     data=[];
     render();
@@ -180,14 +169,10 @@ function resetData(){
 }
 
 function filtrar(){
-  let persona = filtroPersona.value;
-  let ini = fechaInicio.value;
-  let fin = fechaFin.value;
-
   return data.filter(d=>{
-    return (!persona || d.pagador===persona) &&
-           (!ini || d.fecha>=ini) &&
-           (!fin || d.fecha<=fin);
+    return (!filtroPersona.value || d.pagador===filtroPersona.value) &&
+           (!fechaInicio.value || d.fecha>=fechaInicio.value) &&
+           (!fechaFin.value || d.fecha<=fechaFin.value);
   });
 }
 
@@ -199,10 +184,10 @@ function render(){
 
   f.forEach(d=>{
     lista.innerHTML += `
-      <div class="historial-item">
+      <div class="item">
         <b>${d.restaurante}</b><br>
-        ${d.poblacion} | ${d.fecha}<br>
-        💶 ${d.precio} | 👤 ${d.pagador}<br>
+        ${d.poblacion} - ${d.fecha}<br>
+        €${d.precio} | ${d.pagador}<br>
         <span class="stars">${estrellas(d.puntuacion)}</span>
       </div>
     `;
@@ -214,27 +199,29 @@ function render(){
 let chart;
 
 function grafica(datos){
-  let ctx = graficaCanvas = document.getElementById("grafica");
 
-  let colores = {
-    "Toni":"#ff6384",
-    "Verde":"#4caf50",
-    "Sr. Felipe":"#2196f3"
+  let totales = {
+    "Toni":0,
+    "Verde":0,
+    "Sr. Felipe":0
   };
+
+  datos.forEach(d=>{
+    totales[d.pagador] += d.precio;
+  });
+
+  let ctx = document.getElementById("grafica");
 
   if(chart) chart.destroy();
 
   chart = new Chart(ctx,{
-    type:"line",
+    type:"bar",
     data:{
-      labels: datos.map(d=>d.fecha),
-      datasets:["Toni","Verde","Sr. Felipe"].map(p=>({
-        label:p,
-        data: datos.filter(d=>d.pagador===p).map(d=>d.precio),
-        borderColor:colores[p],
-        fill:false,
-        tension:0.4
-      }))
+      labels:Object.keys(totales),
+      datasets:[{
+        label:"Gasto total (€)",
+        data:Object.values(totales)
+      }]
     }
   });
 }
