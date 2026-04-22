@@ -87,6 +87,13 @@ button {
   grid-template-columns: 1fr 1fr;
   gap: 5px;
 }
+
+#imgFelipe {
+  display: none;
+  width: 120px;
+  margin: 10px auto;
+  border-radius: 12px;
+}
 </style>
 </head>
 
@@ -112,16 +119,13 @@ button {
 
 <label>👤 Quién paga</label>
 <select id="pagador">
-  <img 
-  id="imgFelipe" 
-  src="https://cdn-icons-png.flaticon.com/512/1995/1995574.png"
-  style="display:none; width:120px; margin-top:10px; border-radius:10px;"
->
   <option value="">Seleccionar</option>
   <option>Chuliá</option>
   <option>Verde</option>
   <option>Sr. Felipe</option>
 </select>
+
+<img id="imgFelipe" src="https://cdn-icons-png.flaticon.com/512/1995/1995574.png">
 
 <label>⭐ Puntuación (1-10)</label>
 <input type="number" id="puntuacion" min="1" max="10">
@@ -219,13 +223,11 @@ function resetData(){
 }
 
 function filtrar(){
-
   return data.filter(d=>{
     return (!filtroPersona.value || d.pagador===filtroPersona.value) &&
            (!fechaInicio.value || d.fecha>=fechaInicio.value) &&
            (!fechaFin.value || d.fecha<=fechaFin.value);
   });
-
 }
 
 function render(){
@@ -279,10 +281,7 @@ function grafica(datos){
   });
 }
 
-// 👉 Fecha automática al abrir
-document.getElementById("fecha").valueAsDate = new Date();
-
-render();
+// 👷 Mostrar imagen si es Sr. Felipe
 document.getElementById("pagador").addEventListener("change", function(){
 
   let img = document.getElementById("imgFelipe");
@@ -294,6 +293,12 @@ document.getElementById("pagador").addEventListener("change", function(){
   }
 
 });
+
+// 📅 Fecha automática
+document.getElementById("fecha").valueAsDate = new Date();
+
+render();
+
 </script>
 
 </body>
