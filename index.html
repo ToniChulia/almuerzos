@@ -161,9 +161,34 @@ function guardar(){
 }
 
 function resetData(){
-  if(confirm("¿Borrar todo?")){
-    localStorage.clear();
-    data=[];
+  if(confirm("¿Borrar todo y reiniciar la app?")){
+
+    // BORRAR DATOS
+    localStorage.removeItem("almuerzos");
+    data = [];
+
+    // LIMPIAR FORMULARIO
+    document.getElementById("fecha").value = "";
+    document.getElementById("poblacion").value = "";
+    document.getElementById("restaurante").value = "";
+    document.getElementById("precio").value = "";
+    document.getElementById("pagador").value = "";
+    document.getElementById("puntuacion").value = "";
+
+    // LIMPIAR FILTROS
+    document.getElementById("filtroPersona").value = "";
+    document.getElementById("fechaInicio").value = "";
+    document.getElementById("fechaFin").value = "";
+
+    // LIMPIAR LISTA
+    document.getElementById("lista").innerHTML = "";
+
+    // LIMPIAR GRÁFICA
+    if(chart){
+      chart.destroy();
+    }
+
+    // VOLVER A ESTADO INICIAL
     render();
   }
 }
