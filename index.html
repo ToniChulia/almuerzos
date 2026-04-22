@@ -112,6 +112,11 @@ button {
 
 <label>👤 Quién paga</label>
 <select id="pagador">
+  <img 
+  id="imgFelipe" 
+  src="https://cdn-icons-png.flaticon.com/512/1995/1995574.png"
+  style="display:none; width:120px; margin-top:10px; border-radius:10px;"
+>
   <option value="">Seleccionar</option>
   <option>Chuliá</option>
   <option>Verde</option>
@@ -278,7 +283,17 @@ function grafica(datos){
 document.getElementById("fecha").valueAsDate = new Date();
 
 render();
+document.getElementById("pagador").addEventListener("change", function(){
 
+  let img = document.getElementById("imgFelipe");
+
+  if(this.value === "Sr. Felipe"){
+    img.style.display = "block";
+  } else {
+    img.style.display = "none";
+  }
+
+});
 </script>
 
 </body>
